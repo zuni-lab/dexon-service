@@ -9,8 +9,10 @@ require (
 	github.com/ethereum/go-ethereum v1.15.2
 	github.com/go-playground/validator/v10 v10.24.0
 	github.com/golang-migrate/migrate/v4 v4.18.2
+	github.com/google/btree v1.1.3
 	github.com/jackc/pgx/v5 v5.7.2
 	github.com/jedib0t/go-pretty/v6 v6.6.6
+	github.com/jinzhu/copier v0.4.0
 	github.com/joho/godotenv v1.5.1
 	github.com/labstack/echo/v4 v4.13.3
 	github.com/openai/openai-go v0.1.0-alpha.59

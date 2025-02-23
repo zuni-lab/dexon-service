@@ -13,10 +13,12 @@ type Querier interface {
 	CreatePrice(ctx context.Context, arg CreatePriceParams) (Price, error)
 	CreateToken(ctx context.Context, arg CreateTokenParams) (Token, error)
 	GetMarketData(ctx context.Context, arg GetMarketDataParams) ([]GetMarketDataRow, error)
+	GetOrdersByWallet(ctx context.Context, arg GetOrdersByWalletParams) ([]Order, error)
 	GetPool(ctx context.Context, id string) (Pool, error)
 	GetPools(ctx context.Context) ([]Pool, error)
 	GetPriceByPoolID(ctx context.Context, poolID string) (Price, error)
 	GetPrices(ctx context.Context, arg GetPricesParams) ([]Price, error)
+	InsertOrder(ctx context.Context, arg InsertOrderParams) (Order, error)
 	PoolDetails(ctx context.Context, id string) (PoolDetailsRow, error)
 }
 

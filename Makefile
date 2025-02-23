@@ -45,6 +45,7 @@ migrate-up:
 
 migrate-down:
 	migrate -path pkg/db/migration -database "$(POSTGRES_URL)" -verbose down
+	
 new-migration:
 	migrate create -ext sql -dir pkg/db/migration -seq $(name)
 

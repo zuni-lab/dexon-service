@@ -5,8 +5,152 @@
 package db
 
 import (
+	"database/sql/driver"
+	"fmt"
+
 	"github.com/jackc/pgx/v5/pgtype"
 )
+
+type OrderCondition string
+
+const (
+	OrderConditionLIMIT OrderCondition = "LIMIT"
+	OrderConditionSTOP  OrderCondition = "STOP"
+)
+
+func (e *OrderCondition) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = OrderCondition(s)
+	case string:
+		*e = OrderCondition(s)
+	default:
+		return fmt.Errorf("unsupported scan type for OrderCondition: %T", src)
+	}
+	return nil
+}
+
+type NullOrderCondition struct {
+	OrderCondition OrderCondition `json:"order_condition"`
+	Valid          bool           `json:"valid"` // Valid is true if OrderCondition is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullOrderCondition) Scan(value interface{}) error {
+	if value == nil {
+		ns.OrderCondition, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.OrderCondition.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullOrderCondition) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.OrderCondition), nil
+}
+
+type OrderSide string
+
+const (
+	OrderSideBUY  OrderSide = "BUY"
+	OrderSideSELL OrderSide = "SELL"
+)
+
+func (e *OrderSide) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = OrderSide(s)
+	case string:
+		*e = OrderSide(s)
+	default:
+		return fmt.Errorf("unsupported scan type for OrderSide: %T", src)
+	}
+	return nil
+}
+
+type NullOrderSide struct {
+	OrderSide OrderSide `json:"order_side"`
+	Valid     bool      `json:"valid"` // Valid is true if OrderSide is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullOrderSide) Scan(value interface{}) error {
+	if value == nil {
+		ns.OrderSide, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.OrderSide.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullOrderSide) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.OrderSide), nil
+}
+
+type OrderStatus string
+
+const (
+	OrderStatusPENDING  OrderStatus = "PENDING"
+	OrderStatusFILLED   OrderStatus = "FILLED"
+	OrderStatusCANCELED OrderStatus = "CANCELED"
+)
+
+func (e *OrderStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = OrderStatus(s)
+	case string:
+		*e = OrderStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for OrderStatus: %T", src)
+	}
+	return nil
+}
+
+type NullOrderStatus struct {
+	OrderStatus OrderStatus `json:"order_status"`
+	Valid       bool        `json:"valid"` // Valid is true if OrderStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullOrderStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.OrderStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.OrderStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullOrderStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.OrderStatus), nil
+}
+
+type Order struct {
+	ID          int64              `json:"id"`
+	Wallet      pgtype.Text        `json:"wallet"`
+	FromToken   string             `json:"from_token"`
+	ToToken     string             `json:"to_token"`
+	Status      OrderStatus        `json:"status"`
+	Side        OrderSide          `json:"side"`
+	Condition   OrderCondition     `json:"condition"`
+	Price       pgtype.Numeric     `json:"price"`
+	FilledAt    pgtype.Timestamptz `json:"filled_at"`
+	CancelledAt pgtype.Timestamptz `json:"cancelled_at"`
+	CreatedAt   pgtype.Timestamptz `json:"created_at"`
+}
 
 type Pool struct {
 	ID        string             `json:"id"`

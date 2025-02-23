@@ -8,7 +8,6 @@ SELECT * FROM prices
 ORDER BY created_at DESC
 LIMIT $1 OFFSET $2;
 
-
 -- name: GetPriceByPoolID :one
 SELECT * FROM prices
 WHERE pool_id = $1
