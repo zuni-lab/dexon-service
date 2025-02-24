@@ -16,6 +16,7 @@ type OrderCondition string
 const (
 	OrderConditionLIMIT OrderCondition = "LIMIT"
 	OrderConditionSTOP  OrderCondition = "STOP"
+	OrderConditionTWAP  OrderCondition = "TWAP"
 )
 
 func (e *OrderCondition) Scan(src interface{}) error {
@@ -98,9 +99,11 @@ func (ns NullOrderSide) Value() (driver.Value, error) {
 type OrderStatus string
 
 const (
-	OrderStatusPENDING  OrderStatus = "PENDING"
-	OrderStatusFILLED   OrderStatus = "FILLED"
-	OrderStatusCANCELED OrderStatus = "CANCELED"
+	OrderStatusPENDING       OrderStatus = "PENDING"
+	OrderStatusPARTIALFILLED OrderStatus = "PARTIAL_FILLED"
+	OrderStatusFILLED        OrderStatus = "FILLED"
+	OrderStatusREJECTED      OrderStatus = "REJECTED"
+	OrderStatusCANCELED      OrderStatus = "CANCELED"
 )
 
 func (e *OrderStatus) Scan(src interface{}) error {
@@ -139,17 +142,20 @@ func (ns NullOrderStatus) Value() (driver.Value, error) {
 }
 
 type Order struct {
-	ID          int64              `json:"id"`
-	Wallet      pgtype.Text        `json:"wallet"`
-	FromToken   string             `json:"from_token"`
-	ToToken     string             `json:"to_token"`
-	Status      OrderStatus        `json:"status"`
-	Side        OrderSide          `json:"side"`
-	Condition   OrderCondition     `json:"condition"`
-	Price       pgtype.Numeric     `json:"price"`
-	FilledAt    pgtype.Timestamptz `json:"filled_at"`
-	CancelledAt pgtype.Timestamptz `json:"cancelled_at"`
-	CreatedAt   pgtype.Timestamptz `json:"created_at"`
+	ID            int64              `json:"id"`
+	ParentID      pgtype.Int8        `json:"parent_id"`
+	Wallet        pgtype.Text        `json:"wallet"`
+	FromToken     string             `json:"from_token"`
+	ToToken       string             `json:"to_token"`
+	Status        OrderStatus        `json:"status"`
+	Side          OrderSide          `json:"side"`
+	Condition     OrderCondition     `json:"condition"`
+	Price         pgtype.Numeric     `json:"price"`
+	Amount        pgtype.Numeric     `json:"amount"`
+	TwapTotalTime pgtype.Int4        `json:"twap_total_time"`
+	FilledAt      pgtype.Timestamptz `json:"filled_at"`
+	CancelledAt   pgtype.Timestamptz `json:"cancelled_at"`
+	CreatedAt     pgtype.Timestamptz `json:"created_at"`
 }
 
 type Pool struct {
