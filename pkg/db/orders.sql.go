@@ -93,8 +93,8 @@ func (q *Queries) GetOrdersByWallet(ctx context.Context, arg GetOrdersByWalletPa
 }
 
 const insertOrder = `-- name: InsertOrder :one
-INSERT INTO orders (parent_id, wallet, from_token, to_token, side, condition, price, amount, twap_total_time, created_at)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+INSERT INTO orders (parent_id, wallet, from_token, to_token, side, status,condition, price, amount, twap_total_time, filled_at, cancelled_at, created_at)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
 RETURNING id, parent_id, wallet, from_token, to_token, status, side, condition, price, amount, twap_total_time, filled_at, cancelled_at, created_at
 `
 
@@ -104,10 +104,13 @@ type InsertOrderParams struct {
 	FromToken     string             `json:"from_token"`
 	ToToken       string             `json:"to_token"`
 	Side          OrderSide          `json:"side"`
+	Status        OrderStatus        `json:"status"`
 	Condition     OrderCondition     `json:"condition"`
 	Price         pgtype.Numeric     `json:"price"`
 	Amount        pgtype.Numeric     `json:"amount"`
 	TwapTotalTime pgtype.Int4        `json:"twap_total_time"`
+	FilledAt      pgtype.Timestamptz `json:"filled_at"`
+	CancelledAt   pgtype.Timestamptz `json:"cancelled_at"`
 	CreatedAt     pgtype.Timestamptz `json:"created_at"`
 }
 
@@ -118,10 +121,13 @@ func (q *Queries) InsertOrder(ctx context.Context, arg InsertOrderParams) (Order
 		arg.FromToken,
 		arg.ToToken,
 		arg.Side,
+		arg.Status,
 		arg.Condition,
 		arg.Price,
 		arg.Amount,
 		arg.TwapTotalTime,
+		arg.FilledAt,
+		arg.CancelledAt,
 		arg.CreatedAt,
 	)
 	var i Order

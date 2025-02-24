@@ -1,6 +1,6 @@
 -- name: InsertOrder :one
-INSERT INTO orders (parent_id, wallet, from_token, to_token, side, condition, price, amount, twap_total_time, created_at)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+INSERT INTO orders (parent_id, wallet, from_token, to_token, side, status,condition, price, amount, twap_total_time, filled_at, cancelled_at, created_at)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
 RETURNING *;
 
 -- name: GetOrdersByWallet :many

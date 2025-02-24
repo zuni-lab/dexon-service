@@ -2,7 +2,6 @@ package services
 
 import (
 	"context"
-	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jinzhu/copier"
 	"github.com/zuni-lab/dexon-service/pkg/custom"
 	"github.com/zuni-lab/dexon-service/pkg/db"
@@ -65,9 +64,7 @@ type CreateOrderBody struct {
 }
 
 func CreateOrder(ctx context.Context, body CreateOrderBody) (*db.Order, error) {
-	params := db.InsertOrderParams{
-		CreatedAt: pgtype.Timestamptz{Time: time.Now(), Valid: true},
-	}
+	var params db.InsertOrderParams
 	if err := copier.Copy(&params, &body); err != nil {
 		return nil, err
 	}
@@ -79,5 +76,27 @@ func CreateOrder(ctx context.Context, body CreateOrderBody) (*db.Order, error) {
 
 	orderBook := custom.GetOrderBook()
 	orderBook.Type(order.Side, order.Condition).ReplaceOrInsert(order)
+	return &order, nil
+}
+
+func FillPartialOrder(ctx context.Context, parent db.Order, price, amount string) (*db.Order, error) {
+	var params db.InsertOrderParams
+	if err := copier.Copy(&params, &parent); err != nil {
+		return nil, err
+	}
+
+	_ = params.ParentID.Scan(parent.ID)
+	_ = params.CreatedAt.Scan(time.Now())
+	_ = params.Price.Scan(price)
+	_ = params.Amount.Scan(amount)
+	params.TwapTotalTime.Valid = false
+	params.Status = db.OrderStatusFILLED
+	params.FilledAt = params.CreatedAt
+
+	order, err := db.DB.InsertOrder(ctx, params)
+	if err != nil {
+		return nil, err
+	}
+
 	return &order, nil
 }
