@@ -11,6 +11,45 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const getOrdersByStatus = `-- name: GetOrdersByStatus :many
+SELECT id, pool_id, parent_id, wallet, status, side, type, price, amount, twap_total_time, filled_at, cancelled_at, created_at FROM orders
+WHERE status = ANY($1::varchar[])
+`
+
+func (q *Queries) GetOrdersByStatus(ctx context.Context, status []string) ([]Order, error) {
+	rows, err := q.db.Query(ctx, getOrdersByStatus, status)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Order{}
+	for rows.Next() {
+		var i Order
+		if err := rows.Scan(
+			&i.ID,
+			&i.PoolID,
+			&i.ParentID,
+			&i.Wallet,
+			&i.Status,
+			&i.Side,
+			&i.Type,
+			&i.Price,
+			&i.Amount,
+			&i.TwapTotalTime,
+			&i.FilledAt,
+			&i.CancelledAt,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getOrdersByWallet = `-- name: GetOrdersByWallet :many
 SELECT o1.id, o1.pool_id, o1.parent_id, o1.wallet, o1.status, o1.side, o1.type, o1.price, o1.amount, o1.twap_total_time, o1.filled_at, o1.cancelled_at, o1.created_at, o2.id, o2.pool_id, o2.parent_id, o2.wallet, o2.status, o2.side, o2.type, o2.price, o2.amount, o2.twap_total_time, o2.filled_at, o2.cancelled_at, o2.created_at FROM orders AS o1
 LEFT JOIN orders AS o2 ON o1.id = o2.parent_id AND o2.parent_id IS NOT NULL

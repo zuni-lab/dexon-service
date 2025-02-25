@@ -9,3 +9,7 @@ LEFT JOIN orders AS o2 ON o1.id = o2.parent_id AND o2.parent_id IS NOT NULL
 WHERE o1.wallet = $1
 ORDER BY o1.created_at DESC
 LIMIT $2 OFFSET $3;
+
+-- name: GetOrdersByStatus :many
+SELECT * FROM orders
+WHERE status = ANY(@status::varchar[]);

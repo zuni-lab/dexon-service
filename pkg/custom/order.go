@@ -1,6 +1,7 @@
 package custom
 
 import (
+	"context"
 	"github.com/google/btree"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/zuni-lab/dexon-service/pkg/db"
@@ -33,6 +34,19 @@ func GetOrderBook() *OrderBook {
 	})()
 
 	return orderBook
+}
+
+func init() {
+	ctx := context.Background()
+	orders, err := db.DB.GetOrdersByStatus(ctx, []string{string(db.OrderStatusPENDING), string(db.OrderStatusPARTIALFILLED)})
+	if err != nil {
+		panic(err)
+	}
+
+	orderBook := GetOrderBook()
+	for _, order := range orders {
+		orderBook.Sub(order.Side, order.Type).ReplaceOrInsert(order)
+	}
 }
 
 func compareOrder(a, b db.Order) bool {
@@ -69,19 +83,19 @@ func (o *OrderBook) Sub(side db.OrderSide, oType db.OrderType) *OrderTree {
 func (o *OrderTree) ReplaceOrInsert(order db.Order) {
 	o.mux.Lock()
 	defer o.mux.Unlock()
-	o.ReplaceOrInsert(order)
+	o.BTreeG.ReplaceOrInsert(order)
 }
 
-func (o *OrderTree) Get(order db.Order) db.Order {
+func (o *OrderTree) Get(order db.Order) (db.Order, bool) {
 	o.mux.RLock()
 	defer o.mux.RUnlock()
-	return o.Get(order)
+	return o.BTreeG.Get(order)
 }
 
 func (o *OrderTree) Delete(order db.Order) {
 	o.mux.Lock()
 	defer o.mux.Unlock()
-	o.Delete(order)
+	o.BTreeG.Delete(order)
 }
 
 func (o *OrderBook) Match(price pgtype.Numeric, priceTime pgtype.Timestamptz) []*db.Order {
