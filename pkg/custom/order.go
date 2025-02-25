@@ -109,22 +109,22 @@ func (o *OrderBook) Match(price pgtype.Numeric, priceTime pgtype.Timestamptz) []
 		}
 	)
 
-	orderBook.Type(db.OrderSideBUY, db.OrderTypeSTOP).AscendGreaterOrEqual(expected, func(order db.Order) bool {
+	orderBook.Sub(db.OrderSideBUY, db.OrderTypeSTOP).AscendGreaterOrEqual(expected, func(order db.Order) bool {
 		stopBuyOrder = &order
 		return false
 	})
 
-	orderBook.Type(db.OrderSideSELL, db.OrderTypeLIMIT).AscendGreaterOrEqual(expected, func(order db.Order) bool {
+	orderBook.Sub(db.OrderSideSELL, db.OrderTypeLIMIT).AscendGreaterOrEqual(expected, func(order db.Order) bool {
 		limitSellOrder = &order
 		return false
 	})
 
-	orderBook.Type(db.OrderSideBUY, db.OrderTypeLIMIT).DescendLessOrEqual(expected, func(order db.Order) bool {
+	orderBook.Sub(db.OrderSideBUY, db.OrderTypeLIMIT).DescendLessOrEqual(expected, func(order db.Order) bool {
 		limitBuyOrder = &order
 		return false
 	})
 
-	orderBook.Type(db.OrderSideSELL, db.OrderTypeSTOP).DescendLessOrEqual(expected, func(order db.Order) bool {
+	orderBook.Sub(db.OrderSideSELL, db.OrderTypeSTOP).DescendLessOrEqual(expected, func(order db.Order) bool {
 		stopSellOrder = &order
 		return false
 	})
