@@ -11,49 +11,6 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-type OrderCondition string
-
-const (
-	OrderConditionLIMIT OrderCondition = "LIMIT"
-	OrderConditionSTOP  OrderCondition = "STOP"
-	OrderConditionTWAP  OrderCondition = "TWAP"
-)
-
-func (e *OrderCondition) Scan(src interface{}) error {
-	switch s := src.(type) {
-	case []byte:
-		*e = OrderCondition(s)
-	case string:
-		*e = OrderCondition(s)
-	default:
-		return fmt.Errorf("unsupported scan type for OrderCondition: %T", src)
-	}
-	return nil
-}
-
-type NullOrderCondition struct {
-	OrderCondition OrderCondition `json:"order_condition"`
-	Valid          bool           `json:"valid"` // Valid is true if OrderCondition is not NULL
-}
-
-// Scan implements the Scanner interface.
-func (ns *NullOrderCondition) Scan(value interface{}) error {
-	if value == nil {
-		ns.OrderCondition, ns.Valid = "", false
-		return nil
-	}
-	ns.Valid = true
-	return ns.OrderCondition.Scan(value)
-}
-
-// Value implements the driver Valuer interface.
-func (ns NullOrderCondition) Value() (driver.Value, error) {
-	if !ns.Valid {
-		return nil, nil
-	}
-	return string(ns.OrderCondition), nil
-}
-
 type OrderSide string
 
 const (
@@ -141,15 +98,58 @@ func (ns NullOrderStatus) Value() (driver.Value, error) {
 	return string(ns.OrderStatus), nil
 }
 
+type OrderType string
+
+const (
+	OrderTypeMARKET OrderType = "MARKET"
+	OrderTypeLIMIT  OrderType = "LIMIT"
+	OrderTypeSTOP   OrderType = "STOP"
+	OrderTypeTWAP   OrderType = "TWAP"
+)
+
+func (e *OrderType) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = OrderType(s)
+	case string:
+		*e = OrderType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for OrderType: %T", src)
+	}
+	return nil
+}
+
+type NullOrderType struct {
+	OrderType OrderType `json:"order_type"`
+	Valid     bool      `json:"valid"` // Valid is true if OrderType is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullOrderType) Scan(value interface{}) error {
+	if value == nil {
+		ns.OrderType, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.OrderType.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullOrderType) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.OrderType), nil
+}
+
 type Order struct {
 	ID            int64              `json:"id"`
+	PoolID        string             `json:"pool_id"`
 	ParentID      pgtype.Int8        `json:"parent_id"`
 	Wallet        pgtype.Text        `json:"wallet"`
-	FromToken     string             `json:"from_token"`
-	ToToken       string             `json:"to_token"`
 	Status        OrderStatus        `json:"status"`
 	Side          OrderSide          `json:"side"`
-	Condition     OrderCondition     `json:"condition"`
+	Type          OrderType          `json:"type"`
 	Price         pgtype.Numeric     `json:"price"`
 	Amount        pgtype.Numeric     `json:"amount"`
 	TwapTotalTime pgtype.Int4        `json:"twap_total_time"`

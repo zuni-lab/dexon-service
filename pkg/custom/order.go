@@ -52,14 +52,14 @@ func newOrderTree() *OrderTree {
 	}
 }
 
-func (o *OrderBook) Type(side db.OrderSide, condition db.OrderCondition) *OrderTree {
-	if side == db.OrderSideBUY && condition == db.OrderConditionLIMIT {
+func (o *OrderBook) Sub(side db.OrderSide, oType db.OrderType) *OrderTree {
+	if side == db.OrderSideBUY && oType == db.OrderTypeLIMIT {
 		return o.limitBuy
-	} else if side == db.OrderSideBUY && condition == db.OrderConditionSTOP {
+	} else if side == db.OrderSideBUY && oType == db.OrderTypeSTOP {
 		return o.stopBuy
-	} else if side == db.OrderSideSELL && condition == db.OrderConditionLIMIT {
+	} else if side == db.OrderSideSELL && oType == db.OrderTypeLIMIT {
 		return o.limitSell
-	} else if side == db.OrderSideSELL && condition == db.OrderConditionSTOP {
+	} else if side == db.OrderSideSELL && oType == db.OrderTypeSTOP {
 		return o.stopSell
 	} else {
 		return nil
@@ -109,22 +109,22 @@ func (o *OrderBook) Match(price pgtype.Numeric, priceTime pgtype.Timestamptz) []
 		}
 	)
 
-	orderBook.Type(db.OrderSideBUY, db.OrderConditionSTOP).AscendGreaterOrEqual(expected, func(order db.Order) bool {
+	orderBook.Type(db.OrderSideBUY, db.OrderTypeSTOP).AscendGreaterOrEqual(expected, func(order db.Order) bool {
 		stopBuyOrder = &order
 		return false
 	})
 
-	orderBook.Type(db.OrderSideSELL, db.OrderConditionLIMIT).AscendGreaterOrEqual(expected, func(order db.Order) bool {
+	orderBook.Type(db.OrderSideSELL, db.OrderTypeLIMIT).AscendGreaterOrEqual(expected, func(order db.Order) bool {
 		limitSellOrder = &order
 		return false
 	})
 
-	orderBook.Type(db.OrderSideBUY, db.OrderConditionLIMIT).DescendLessOrEqual(expected, func(order db.Order) bool {
+	orderBook.Type(db.OrderSideBUY, db.OrderTypeLIMIT).DescendLessOrEqual(expected, func(order db.Order) bool {
 		limitBuyOrder = &order
 		return false
 	})
 
-	orderBook.Type(db.OrderSideSELL, db.OrderConditionSTOP).DescendLessOrEqual(expected, func(order db.Order) bool {
+	orderBook.Type(db.OrderSideSELL, db.OrderTypeSTOP).DescendLessOrEqual(expected, func(order db.Order) bool {
 		stopSellOrder = &order
 		return false
 	})

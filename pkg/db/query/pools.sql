@@ -5,6 +5,10 @@ SELECT * FROM pools;
 SELECT * FROM pools
 WHERE id = $1 LIMIT 1;
 
+-- name: GetPoolByToken :one
+SELECT * FROM pools
+WHERE token0_id = $1 AND token1_id = $2 LIMIT 1;
+
 -- name: CreatePool :one
 INSERT INTO pools (id, token0_id, token1_id)
 VALUES ($1, $2, $3)

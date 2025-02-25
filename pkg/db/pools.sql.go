@@ -50,6 +50,28 @@ func (q *Queries) GetPool(ctx context.Context, id string) (Pool, error) {
 	return i, err
 }
 
+const getPoolByToken = `-- name: GetPoolByToken :one
+SELECT id, token0_id, token1_id, created_at FROM pools
+WHERE token0_id = $1 AND token1_id = $2 LIMIT 1
+`
+
+type GetPoolByTokenParams struct {
+	Token0ID string `json:"token0_id"`
+	Token1ID string `json:"token1_id"`
+}
+
+func (q *Queries) GetPoolByToken(ctx context.Context, arg GetPoolByTokenParams) (Pool, error) {
+	row := q.db.QueryRow(ctx, getPoolByToken, arg.Token0ID, arg.Token1ID)
+	var i Pool
+	err := row.Scan(
+		&i.ID,
+		&i.Token0ID,
+		&i.Token1ID,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
 const getPools = `-- name: GetPools :many
 SELECT id, token0_id, token1_id, created_at FROM pools
 `

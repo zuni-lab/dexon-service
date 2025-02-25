@@ -15,6 +15,7 @@ type Querier interface {
 	GetMarketData(ctx context.Context, arg GetMarketDataParams) ([]GetMarketDataRow, error)
 	GetOrdersByWallet(ctx context.Context, arg GetOrdersByWalletParams) ([]GetOrdersByWalletRow, error)
 	GetPool(ctx context.Context, id string) (Pool, error)
+	GetPoolByToken(ctx context.Context, arg GetPoolByTokenParams) (Pool, error)
 	GetPools(ctx context.Context) ([]Pool, error)
 	GetPriceByPoolID(ctx context.Context, poolID string) (Price, error)
 	GetPrices(ctx context.Context, arg GetPricesParams) ([]Price, error)
