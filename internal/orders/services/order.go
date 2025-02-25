@@ -69,6 +69,10 @@ func CreateOrder(ctx context.Context, body CreateOrderBody) (*db.Order, error) {
 		params db.InsertOrderParams
 	)
 
+	if err := copier.Copy(&params, &body); err != nil {
+		return nil, err
+	}
+
 	pool, err := db.DB.GetPoolByToken(ctx, db.GetPoolByTokenParams{
 		Token0ID: body.Token0,
 		Token1ID: body.Token1,
@@ -78,8 +82,8 @@ func CreateOrder(ctx context.Context, body CreateOrderBody) (*db.Order, error) {
 	}
 
 	params.PoolID = pool.ID
-	if err := copier.Copy(&params, &body); err != nil {
-		return nil, err
+	if params.Type == db.OrderTypeMARKET {
+		params.Status = db.OrderStatusFILLED
 	}
 
 	order, err := db.DB.InsertOrder(ctx, params)

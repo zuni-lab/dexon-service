@@ -60,7 +60,7 @@ const (
 	OrderStatusPARTIALFILLED OrderStatus = "PARTIAL_FILLED"
 	OrderStatusFILLED        OrderStatus = "FILLED"
 	OrderStatusREJECTED      OrderStatus = "REJECTED"
-	OrderStatusCANCELED      OrderStatus = "CANCELED"
+	OrderStatusCANCELLED     OrderStatus = "CANCELLED"
 )
 
 func (e *OrderStatus) Scan(src interface{}) error {
