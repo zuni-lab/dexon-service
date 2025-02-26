@@ -3,11 +3,8 @@ package job
 import (
 	"context"
 	"fmt"
-	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/zuni-lab/dexon-service/pkg/custom"
+	"github.com/zuni-lab/dexon-service/internal/orders/services"
 	"github.com/zuni-lab/dexon-service/pkg/utils"
-	"math"
-	"math/big"
 	"strings"
 	"sync"
 	"time"
@@ -203,25 +200,9 @@ RETRY:
 
 func (p *PriceTracker) handleEvent(event *evm.UniswapV3Swap) error {
 	price := utils.CalculatePrice(event.SqrtPriceX96)
-	priceInt := new(big.Int)
-	price.Int(priceInt)
-	priceExp2 := new(big.Float).MantExp(price)
-	priceExp10 := int32(math.Floor(float64(priceExp2) * math.Log10(2)))
-
-	orderBook := custom.GetOrderBook()
-	matchedOrders := orderBook.Match(
-		pgtype.Numeric{
-			Int:   priceInt,
-			Exp:   priceExp10,
-			Valid: true,
-		},
-		pgtype.Timestamptz{
-			Time: time.Now(),
-		},
-	)
-
-	for _, order := range matchedOrders {
-		orderBook.Sub(order.Side, order.Type).Delete(*order)
+	_, err := services.MatchOrder(context.Background(), price.String())
+	if err != nil {
+		log.Info().Any("event", event).Err(err).Msgf("[PriceTracker] [HandleEvent] failed to match order")
 	}
 
 	log.Info().Any("event", event).Msgf("[PriceTracker] [HandleEvent] handled %s event", event.Raw.Address.Hex())

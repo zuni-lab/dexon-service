@@ -2,8 +2,9 @@ package services
 
 import (
 	"context"
+	"errors"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jinzhu/copier"
-	"github.com/zuni-lab/dexon-service/pkg/custom"
 	"github.com/zuni-lab/dexon-service/pkg/db"
 	"slices"
 	"time"
@@ -84,6 +85,7 @@ func CreateOrder(ctx context.Context, body CreateOrderBody) (*db.Order, error) {
 	params.PoolID = pool.ID
 	if params.Type == db.OrderTypeMARKET {
 		params.Status = db.OrderStatusFILLED
+		_ = params.FilledAt.Scan(time.Now())
 	}
 
 	order, err := db.DB.InsertOrder(ctx, params)
@@ -91,8 +93,6 @@ func CreateOrder(ctx context.Context, body CreateOrderBody) (*db.Order, error) {
 		return nil, err
 	}
 
-	orderBook := custom.GetOrderBook()
-	orderBook.Sub(order.Side, order.Type).ReplaceOrInsert(order)
 	return &order, nil
 }
 
@@ -103,14 +103,48 @@ func FillPartialOrder(ctx context.Context, parent db.Order, price, amount string
 	}
 
 	_ = params.ParentID.Scan(parent.ID)
-	_ = params.CreatedAt.Scan(time.Now())
+	_ = params.FilledAt.Scan(time.Now())
 	_ = params.Price.Scan(price)
 	_ = params.Amount.Scan(amount)
-	params.TwapTotalTime.Valid = false
 	params.Status = db.OrderStatusFILLED
-	params.FilledAt = params.CreatedAt
 
 	order, err := db.DB.InsertOrder(ctx, params)
+	if err != nil {
+		return nil, err
+	}
+
+	return &order, nil
+}
+
+func MatchOrder(ctx context.Context, price string) (*db.Order, error) {
+	var numericPrice pgtype.Numeric
+	err := numericPrice.Scan(price)
+	if err != nil {
+		return nil, err
+	}
+
+	order, err := db.DB.GetMatchedOrder(ctx, numericPrice)
+	if err != nil {
+		return nil, err
+	}
+
+	// TODO: Call to contract
+
+	params := db.UpdateOrderParams{
+		ID: order.ID,
+	}
+	if order.Type == db.OrderTypeLIMIT ||
+		order.Type == db.OrderTypeSTOP ||
+		order.Type == db.OrderTypeTWAP && order.TwapAmount.Int.Cmp(order.Amount.Int) == 0 {
+		_ = params.FilledAt.Scan(time.Now())
+		params.Status = db.OrderStatusFILLED
+	} else if order.Type == db.OrderTypeTWAP {
+		params.Status = db.OrderStatusPARTIALFILLED
+	} else {
+		return nil, errors.New("invalid order")
+	}
+
+	order, err = db.DB.UpdateOrder(ctx, params)
 	if err != nil {
 		return nil, err
 	}

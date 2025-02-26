@@ -6,6 +6,8 @@ package db
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type Querier interface {
@@ -13,6 +15,7 @@ type Querier interface {
 	CreatePrice(ctx context.Context, arg CreatePriceParams) (Price, error)
 	CreateToken(ctx context.Context, arg CreateTokenParams) (Token, error)
 	GetMarketData(ctx context.Context, arg GetMarketDataParams) ([]GetMarketDataRow, error)
+	GetMatchedOrder(ctx context.Context, price pgtype.Numeric) (Order, error)
 	GetOrdersByStatus(ctx context.Context, status []string) ([]Order, error)
 	GetOrdersByWallet(ctx context.Context, arg GetOrdersByWalletParams) ([]GetOrdersByWalletRow, error)
 	GetPool(ctx context.Context, id string) (Pool, error)
@@ -22,6 +25,7 @@ type Querier interface {
 	GetPrices(ctx context.Context, arg GetPricesParams) ([]Price, error)
 	InsertOrder(ctx context.Context, arg InsertOrderParams) (Order, error)
 	PoolDetails(ctx context.Context, id string) (PoolDetailsRow, error)
+	UpdateOrder(ctx context.Context, arg UpdateOrderParams) (Order, error)
 }
 
 var _ Querier = (*Queries)(nil)

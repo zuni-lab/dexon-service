@@ -143,19 +143,21 @@ func (ns NullOrderType) Value() (driver.Value, error) {
 }
 
 type Order struct {
-	ID            int64              `json:"id"`
-	PoolID        string             `json:"pool_id"`
-	ParentID      pgtype.Int8        `json:"parent_id"`
-	Wallet        pgtype.Text        `json:"wallet"`
-	Status        OrderStatus        `json:"status"`
-	Side          OrderSide          `json:"side"`
-	Type          OrderType          `json:"type"`
-	Price         pgtype.Numeric     `json:"price"`
-	Amount        pgtype.Numeric     `json:"amount"`
-	TwapTotalTime pgtype.Int4        `json:"twap_total_time"`
-	FilledAt      pgtype.Timestamptz `json:"filled_at"`
-	CancelledAt   pgtype.Timestamptz `json:"cancelled_at"`
-	CreatedAt     pgtype.Timestamptz `json:"created_at"`
+	ID              int64              `json:"id"`
+	PoolID          string             `json:"pool_id"`
+	ParentID        pgtype.Int8        `json:"parent_id"`
+	Wallet          pgtype.Text        `json:"wallet"`
+	Status          OrderStatus        `json:"status"`
+	Side            OrderSide          `json:"side"`
+	Type            OrderType          `json:"type"`
+	Price           pgtype.Numeric     `json:"price"`
+	Amount          pgtype.Numeric     `json:"amount"`
+	TwapAmount      pgtype.Numeric     `json:"twap_amount"`
+	TwapParts       pgtype.Int4        `json:"twap_parts"`
+	PartialFilledAt pgtype.Timestamptz `json:"partial_filled_at"`
+	FilledAt        pgtype.Timestamptz `json:"filled_at"`
+	CancelledAt     pgtype.Timestamptz `json:"cancelled_at"`
+	CreatedAt       pgtype.Timestamptz `json:"created_at"`
 }
 
 type Pool struct {
