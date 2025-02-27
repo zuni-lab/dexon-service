@@ -199,7 +199,7 @@ RETRY:
 }
 
 func (p *PriceTracker) handleEvent(event *evm.UniswapV3Swap) error {
-	price := utils.CalculatePrice(event.SqrtPriceX96)
+	price := utils.CalculatePrice(nil, 0, 0, false)
 	_, err := services.MatchOrder(context.Background(), price.String())
 	if err != nil {
 		log.Info().Any("event", event).Err(err).Msgf("[PriceTracker] [HandleEvent] failed to match order")
