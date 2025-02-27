@@ -37,6 +37,7 @@ type CreateOrderBody struct {
 	Price         string       `json:"price" validate:"numeric,gt=0"`
 	Amount        string       `json:"amount" validate:"numeric,gt=0"`
 	TwapTotalTime *int32       `json:"twapTotalTime" validate:"omitempty,gt=0"`
+	Slippage      float64      `json:"slippage" validate:"gte=0"`
 }
 
 func CreateOrder(ctx context.Context, body CreateOrderBody) (*db.Order, error) {
