@@ -11,9 +11,9 @@ import (
 )
 
 type ListOrdersByWalletQuery struct {
-	Wallet string `json:"wallet" validate:"eth_addr"`
-	Limit  int32  `json:"limit"`
-	Offset int32  `json:"offset"`
+	Wallet string `query:"wallet" validate:"eth_addr"`
+	Limit  int32  `query:"limit" validate:"gt=0"`
+	Offset int32  `query:"offset" validate:"gte=0"`
 }
 
 type ListOrdersByWalletResponseItem struct {
@@ -34,7 +34,7 @@ func ListOrderByWallet(ctx context.Context, query ListOrdersByWalletQuery) ([]Li
 
 	var (
 		item ListOrdersByWalletResponseItem
-		res  []ListOrdersByWalletResponseItem
+		res  = []ListOrdersByWalletResponseItem{}
 	)
 	for _, order := range orders {
 		if idx := slices.IndexFunc(res, func(item ListOrdersByWalletResponseItem) bool {
@@ -86,6 +86,8 @@ func CreateOrder(ctx context.Context, body CreateOrderBody) (*db.Order, error) {
 	if params.Type == db.OrderTypeMARKET {
 		params.Status = db.OrderStatusFILLED
 		_ = params.FilledAt.Scan(time.Now())
+	} else {
+		params.Status = db.OrderStatusPENDING
 	}
 
 	order, err := db.DB.InsertOrder(ctx, params)

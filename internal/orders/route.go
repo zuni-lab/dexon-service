@@ -1,4 +1,4 @@
-package prices
+package orders
 
 import (
 	"github.com/labstack/echo/v4"
@@ -17,6 +17,6 @@ func Route(g *echo.Group, path string) {
 
 	ordersGroup := g.Group(path, middleware)
 
-	ordersGroup.GET("/", handlers.List)
-	ordersGroup.POST("/", handlers.Create)
+	ordersGroup.GET("", handlers.List)
+	ordersGroup.POST("", handlers.Create)
 }

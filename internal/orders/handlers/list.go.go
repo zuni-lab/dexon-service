@@ -16,10 +16,10 @@ func List(c echo.Context) error {
 		return err
 	}
 
-	candlestick, err := services.ListOrderByWallet(ctx, query)
+	orders, err := services.ListOrderByWallet(ctx, query)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
 
-	return c.JSON(http.StatusOK, candlestick)
+	return c.JSON(http.StatusOK, orders)
 }

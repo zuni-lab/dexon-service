@@ -24,7 +24,7 @@ services:
     volumes:
       - dexon_openobserve_data:/data
   api:
-    image: dexon-api 
+    image: dexon-api
     container_name: dexon-api
     build:
       context: .
