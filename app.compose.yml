@@ -23,27 +23,27 @@ services:
       - "5080:5080"
     volumes:
       - dexon_openobserve_data:/data
-  api:
-    image: dexon-api
-    container_name: dexon-api
-    build:
-      context: .
-      dockerfile: Dockerfile
-    ports:
-      - 12345:12345
-    volumes:
-      - ./.env:/app/.env
-    environment:
-      POSTGRES_URL: postgresql://postgres:postgres@timescaledb:5432/dexon?sslmode=disable
-    depends_on:
-      - timescaledb
-      - openobserve
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:12345/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-    restart: always
+#  api:
+#    image: dexon-api
+#    container_name: dexon-api
+#    build:
+#      context: .
+#      dockerfile: Dockerfile
+#    ports:
+#      - 12345:12345
+#    volumes:
+#      - ./.env:/app/.env
+#    environment:
+#      POSTGRES_URL: postgresql://postgres:postgres@timescaledb:5432/dexon?sslmode=disable
+#    depends_on:
+#      - timescaledb
+#      - openobserve
+#    healthcheck:
+#      test: ["CMD", "curl", "-f", "http://localhost:12345/health"]
+#      interval: 30s
+#      timeout: 10s
+#      retries: 5
+#    restart: always
 
 volumes:
   dexon_timescaledb_data:

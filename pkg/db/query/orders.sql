@@ -1,13 +1,22 @@
 -- name: InsertOrder :one
-INSERT INTO orders (parent_id, wallet, pool_id, side, status, type, price, amount, twap_amount, twap_parts, filled_at, partial_filled_at, cancelled_at)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+INSERT INTO orders (
+    pool_ids, parent_id, wallet, status, side, type,
+    price, amount, slippage, twap_interval_seconds,
+    twap_executed_times, twap_current_executed_times,
+    twap_min_price, twap_max_price, deadline,
+    partial_filled_at, filled_at, rejected_at,
+    cancelled_at, created_at)
+VALUES ($1, $2, $3, $4, $5, $6,
+        $7, $8, $9, $10,
+        $11, $12, $13,
+        $14, $15, $16,
+        $17, $18, $19, $20)
 RETURNING *;
 
 -- name: GetOrdersByWallet :many
-SELECT o1.*, sqlc.embed(o2) FROM orders AS o1
-LEFT JOIN orders AS o2 ON o1.id = o2.parent_id AND o2.parent_id IS NOT NULL
-WHERE o1.wallet = $1
-ORDER BY o1.created_at DESC
+SELECT * FROM orders
+WHERE wallet = $1
+ORDER BY created_at DESC
 LIMIT $2 OFFSET $3;
 
 -- name: GetOrdersByStatus :many
@@ -25,7 +34,6 @@ WHERE (
         OR (side = 'SELL' AND type = 'TWAP' AND price >= $1)
     )
     AND status IN ('PENDING', 'PARTIAL_FILLED')
-    AND type <> 'TWAP'
 ORDER BY created_at ASC
 LIMIT 1;
 
@@ -33,10 +41,10 @@ LIMIT 1;
 UPDATE orders
 SET
     status = COALESCE($2, status),
-    twap_amount = COALESCE($3, twap_amount),
+    twap_current_executed_times = COALESCE($3, twap_current_executed_times),
     filled_at = COALESCE($4, filled_at),
     cancelled_at = COALESCE($5, cancelled_at),
-    twap_amount = COALESCE($6, twap_amount),
-    partial_filled_at = COALESCE($7, partial_filled_at)
+    partial_filled_at = COALESCE($6, partial_filled_at),
+    rejected_at = COALESCE($7, rejected_at)
 WHERE id = $1
 RETURNING *;

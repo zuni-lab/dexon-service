@@ -101,6 +101,36 @@ func (q *Queries) GetPools(ctx context.Context) ([]Pool, error) {
 	return items, nil
 }
 
+const getPoolsByIDs = `-- name: GetPoolsByIDs :many
+SELECT id, token0_id, token1_id, created_at FROM pools
+WHERE id = ANY($1::varchar[])
+`
+
+func (q *Queries) GetPoolsByIDs(ctx context.Context, ids []string) ([]Pool, error) {
+	rows, err := q.db.Query(ctx, getPoolsByIDs, ids)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Pool{}
+	for rows.Next() {
+		var i Pool
+		if err := rows.Scan(
+			&i.ID,
+			&i.Token0ID,
+			&i.Token1ID,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const poolDetails = `-- name: PoolDetails :one
 SELECT 
     pools.id,

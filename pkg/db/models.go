@@ -143,21 +143,30 @@ func (ns NullOrderType) Value() (driver.Value, error) {
 }
 
 type Order struct {
-	ID              int64              `json:"id"`
-	PoolID          string             `json:"pool_id"`
-	ParentID        pgtype.Int8        `json:"parent_id"`
-	Wallet          pgtype.Text        `json:"wallet"`
-	Status          OrderStatus        `json:"status"`
-	Side            OrderSide          `json:"side"`
-	Type            OrderType          `json:"type"`
-	Price           pgtype.Numeric     `json:"price"`
-	Amount          pgtype.Numeric     `json:"amount"`
-	TwapAmount      pgtype.Numeric     `json:"twap_amount"`
-	TwapParts       pgtype.Int4        `json:"twap_parts"`
-	PartialFilledAt pgtype.Timestamptz `json:"partial_filled_at"`
-	FilledAt        pgtype.Timestamptz `json:"filled_at"`
-	CancelledAt     pgtype.Timestamptz `json:"cancelled_at"`
-	CreatedAt       pgtype.Timestamptz `json:"created_at"`
+	ID                       int64              `json:"id"`
+	ParentID                 pgtype.Int8        `json:"parent_id"`
+	Wallet                   pgtype.Text        `json:"wallet"`
+	Status                   OrderStatus        `json:"status"`
+	Side                     OrderSide          `json:"side"`
+	Type                     OrderType          `json:"type"`
+	Price                    pgtype.Numeric     `json:"price"`
+	Amount                   pgtype.Numeric     `json:"amount"`
+	TwapAmount               pgtype.Numeric     `json:"twap_amount"`
+	TwapParts                pgtype.Int4        `json:"twap_parts"`
+	PartialFilledAt          pgtype.Timestamptz `json:"partial_filled_at"`
+	FilledAt                 pgtype.Timestamptz `json:"filled_at"`
+	CancelledAt              pgtype.Timestamptz `json:"cancelled_at"`
+	CreatedAt                pgtype.Timestamptz `json:"created_at"`
+	PoolIds                  []string           `json:"pool_ids"`
+	Slippage                 pgtype.Float8      `json:"slippage"`
+	TwapIntervalSeconds      pgtype.Int4        `json:"twap_interval_seconds"`
+	TwapExecutedTimes        pgtype.Int4        `json:"twap_executed_times"`
+	TwapCurrentExecutedTimes pgtype.Int4        `json:"twap_current_executed_times"`
+	TwapMinPrice             pgtype.Numeric     `json:"twap_min_price"`
+	TwapMaxPrice             pgtype.Numeric     `json:"twap_max_price"`
+	Deadline                 pgtype.Timestamp   `json:"deadline"`
+	RejectedAt               pgtype.Timestamp   `json:"rejected_at"`
+	Signature                pgtype.Text        `json:"signature"`
 }
 
 type Pool struct {

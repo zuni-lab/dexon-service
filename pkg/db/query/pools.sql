@@ -5,6 +5,10 @@ SELECT * FROM pools;
 SELECT * FROM pools
 WHERE id = $1 LIMIT 1;
 
+-- name: GetPoolsByIDs :many
+SELECT * FROM pools
+WHERE id = ANY(@ids::varchar[]);
+
 -- name: GetPoolByToken :one
 SELECT * FROM pools
 WHERE token0_id = $1 AND token1_id = $2 LIMIT 1;
