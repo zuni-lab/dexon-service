@@ -43,6 +43,8 @@ type CreateOrderBody struct {
 	Amount        string       `json:"amount" validate:"numeric,gt=0"`
 	TwapTotalTime *int32       `json:"twapTotalTime" validate:"omitempty,gt=0"`
 	Slippage      float64      `json:"slippage" validate:"gte=0"`
+	Signature     string       `json:"signature" validate:"max=130"`
+	Paths         string       `json:"paths" validate:"max=256"`
 }
 
 func CreateOrder(ctx context.Context, body CreateOrderBody) (*db.Order, error) {
@@ -102,7 +104,6 @@ func FillPartialOrder(ctx context.Context, parent db.Order, price, amount string
 }
 
 func MatchOrder(ctx context.Context, price *big.Float) (*db.Order, error) {
-
 	numericPrice, err := utils.BigFloatToNumeric(price)
 	if err != nil {
 		return nil, err

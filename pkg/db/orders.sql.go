@@ -172,13 +172,15 @@ INSERT INTO orders (
     price, amount, slippage, twap_interval_seconds,
     twap_executed_times, twap_current_executed_times,
     twap_min_price, twap_max_price, deadline,
+    signature, paths,
     partial_filled_at, filled_at, rejected_at,
     cancelled_at, created_at)
 VALUES ($1, $2, $3, $4, $5, $6,
         $7, $8, $9, $10,
         $11, $12, $13,
         $14, $15, $16,
-        $17, $18, $19, $20)
+        $17, $18, $19, $20,
+        $21, $22)
 RETURNING id, pool_ids, paths, wallet, status, side, type, price, amount, slippage, signature, nonce, parent_id, twap_interval_seconds, twap_executed_times, twap_current_executed_times, twap_min_price, twap_max_price, deadline, partial_filled_at, filled_at, rejected_at, cancelled_at, created_at
 `
 
@@ -198,6 +200,8 @@ type InsertOrderParams struct {
 	TwapMinPrice             pgtype.Numeric   `json:"twap_min_price"`
 	TwapMaxPrice             pgtype.Numeric   `json:"twap_max_price"`
 	Deadline                 pgtype.Timestamp `json:"deadline"`
+	Signature                pgtype.Text      `json:"signature"`
+	Paths                    string           `json:"paths"`
 	PartialFilledAt          pgtype.Timestamp `json:"partial_filled_at"`
 	FilledAt                 pgtype.Timestamp `json:"filled_at"`
 	RejectedAt               pgtype.Timestamp `json:"rejected_at"`
@@ -222,6 +226,8 @@ func (q *Queries) InsertOrder(ctx context.Context, arg InsertOrderParams) (Order
 		arg.TwapMinPrice,
 		arg.TwapMaxPrice,
 		arg.Deadline,
+		arg.Signature,
+		arg.Paths,
 		arg.PartialFilledAt,
 		arg.FilledAt,
 		arg.RejectedAt,

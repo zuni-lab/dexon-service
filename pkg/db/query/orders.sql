@@ -4,13 +4,15 @@ INSERT INTO orders (
     price, amount, slippage, twap_interval_seconds,
     twap_executed_times, twap_current_executed_times,
     twap_min_price, twap_max_price, deadline,
+    signature, paths,
     partial_filled_at, filled_at, rejected_at,
     cancelled_at, created_at)
 VALUES ($1, $2, $3, $4, $5, $6,
         $7, $8, $9, $10,
         $11, $12, $13,
         $14, $15, $16,
-        $17, $18, $19, $20)
+        $17, $18, $19, $20,
+        $21, $22)
 RETURNING *;
 
 -- name: GetOrdersByWallet :many
