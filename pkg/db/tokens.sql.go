@@ -20,7 +20,7 @@ type CreateTokenParams struct {
 	Name     string `json:"name"`
 	Symbol   string `json:"symbol"`
 	Decimals int32  `json:"decimals"`
-	IsStable bool   `json:"is_stable"`
+	IsStable bool   `json:"isStable"`
 }
 
 func (q *Queries) CreateToken(ctx context.Context, arg CreateTokenParams) (Token, error) {

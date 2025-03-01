@@ -185,8 +185,8 @@ RETURNING id, pool_ids, paths, wallet, status, side, type, price, amount, slippa
 `
 
 type InsertOrderParams struct {
-	PoolIds                  []string         `json:"pool_ids"`
-	ParentID                 pgtype.Int8      `json:"parent_id"`
+	PoolIds                  []string         `json:"poolIds"`
+	ParentID                 pgtype.Int8      `json:"parentId"`
 	Wallet                   pgtype.Text      `json:"wallet"`
 	Status                   OrderStatus      `json:"status"`
 	Side                     OrderSide        `json:"side"`
@@ -194,19 +194,19 @@ type InsertOrderParams struct {
 	Price                    pgtype.Numeric   `json:"price"`
 	Amount                   pgtype.Numeric   `json:"amount"`
 	Slippage                 pgtype.Float8    `json:"slippage"`
-	TwapIntervalSeconds      pgtype.Int4      `json:"twap_interval_seconds"`
-	TwapExecutedTimes        pgtype.Int4      `json:"twap_executed_times"`
-	TwapCurrentExecutedTimes pgtype.Int4      `json:"twap_current_executed_times"`
-	TwapMinPrice             pgtype.Numeric   `json:"twap_min_price"`
-	TwapMaxPrice             pgtype.Numeric   `json:"twap_max_price"`
+	TwapIntervalSeconds      pgtype.Int4      `json:"twapIntervalSeconds"`
+	TwapExecutedTimes        pgtype.Int4      `json:"twapExecutedTimes"`
+	TwapCurrentExecutedTimes pgtype.Int4      `json:"twapCurrentExecutedTimes"`
+	TwapMinPrice             pgtype.Numeric   `json:"twapMinPrice"`
+	TwapMaxPrice             pgtype.Numeric   `json:"twapMaxPrice"`
 	Deadline                 pgtype.Timestamp `json:"deadline"`
 	Signature                pgtype.Text      `json:"signature"`
 	Paths                    string           `json:"paths"`
-	PartialFilledAt          pgtype.Timestamp `json:"partial_filled_at"`
-	FilledAt                 pgtype.Timestamp `json:"filled_at"`
-	RejectedAt               pgtype.Timestamp `json:"rejected_at"`
-	CancelledAt              pgtype.Timestamp `json:"cancelled_at"`
-	CreatedAt                pgtype.Timestamp `json:"created_at"`
+	PartialFilledAt          pgtype.Timestamp `json:"partialFilledAt"`
+	FilledAt                 pgtype.Timestamp `json:"filledAt"`
+	RejectedAt               pgtype.Timestamp `json:"rejectedAt"`
+	CancelledAt              pgtype.Timestamp `json:"cancelledAt"`
+	CreatedAt                pgtype.Timestamp `json:"createdAt"`
 }
 
 func (q *Queries) InsertOrder(ctx context.Context, arg InsertOrderParams) (Order, error) {
@@ -280,11 +280,11 @@ RETURNING id, pool_ids, paths, wallet, status, side, type, price, amount, slippa
 type UpdateOrderParams struct {
 	ID                       int64            `json:"id"`
 	Status                   OrderStatus      `json:"status"`
-	TwapCurrentExecutedTimes pgtype.Int4      `json:"twap_current_executed_times"`
-	FilledAt                 pgtype.Timestamp `json:"filled_at"`
-	CancelledAt              pgtype.Timestamp `json:"cancelled_at"`
-	PartialFilledAt          pgtype.Timestamp `json:"partial_filled_at"`
-	RejectedAt               pgtype.Timestamp `json:"rejected_at"`
+	TwapCurrentExecutedTimes pgtype.Int4      `json:"twapCurrentExecutedTimes"`
+	FilledAt                 pgtype.Timestamp `json:"filledAt"`
+	CancelledAt              pgtype.Timestamp `json:"cancelledAt"`
+	PartialFilledAt          pgtype.Timestamp `json:"partialFilledAt"`
+	RejectedAt               pgtype.Timestamp `json:"rejectedAt"`
 }
 
 func (q *Queries) UpdateOrder(ctx context.Context, arg UpdateOrderParams) (Order, error) {

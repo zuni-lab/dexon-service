@@ -31,7 +31,7 @@ func (e *OrderSide) Scan(src interface{}) error {
 }
 
 type NullOrderSide struct {
-	OrderSide OrderSide `json:"order_side"`
+	OrderSide OrderSide `json:"orderSide"`
 	Valid     bool      `json:"valid"` // Valid is true if OrderSide is not NULL
 }
 
@@ -76,7 +76,7 @@ func (e *OrderStatus) Scan(src interface{}) error {
 }
 
 type NullOrderStatus struct {
-	OrderStatus OrderStatus `json:"order_status"`
+	OrderStatus OrderStatus `json:"orderStatus"`
 	Valid       bool        `json:"valid"` // Valid is true if OrderStatus is not NULL
 }
 
@@ -120,7 +120,7 @@ func (e *OrderType) Scan(src interface{}) error {
 }
 
 type NullOrderType struct {
-	OrderType OrderType `json:"order_type"`
+	OrderType OrderType `json:"orderType"`
 	Valid     bool      `json:"valid"` // Valid is true if OrderType is not NULL
 }
 
@@ -143,16 +143,16 @@ func (ns NullOrderType) Value() (driver.Value, error) {
 }
 
 type BlockProcessingState struct {
-	PoolAddress        string           `json:"pool_address"`
-	LastProcessedBlock int64            `json:"last_processed_block"`
-	IsBackfill         bool             `json:"is_backfill"`
-	CreatedAt          pgtype.Timestamp `json:"created_at"`
-	UpdatedAt          pgtype.Timestamp `json:"updated_at"`
+	PoolAddress        string           `json:"poolAddress"`
+	LastProcessedBlock int64            `json:"lastProcessedBlock"`
+	IsBackfill         bool             `json:"isBackfill"`
+	CreatedAt          pgtype.Timestamp `json:"createdAt"`
+	UpdatedAt          pgtype.Timestamp `json:"updatedAt"`
 }
 
 type Order struct {
 	ID                       int64            `json:"id"`
-	PoolIds                  []string         `json:"pool_ids"`
+	PoolIds                  []string         `json:"poolIds"`
 	Paths                    string           `json:"paths"`
 	Wallet                   pgtype.Text      `json:"wallet"`
 	Status                   OrderStatus      `json:"status"`
@@ -163,42 +163,42 @@ type Order struct {
 	Slippage                 pgtype.Float8    `json:"slippage"`
 	Signature                pgtype.Text      `json:"signature"`
 	Nonce                    int64            `json:"nonce"`
-	ParentID                 pgtype.Int8      `json:"parent_id"`
-	TwapIntervalSeconds      pgtype.Int4      `json:"twap_interval_seconds"`
-	TwapExecutedTimes        pgtype.Int4      `json:"twap_executed_times"`
-	TwapCurrentExecutedTimes pgtype.Int4      `json:"twap_current_executed_times"`
-	TwapMinPrice             pgtype.Numeric   `json:"twap_min_price"`
-	TwapMaxPrice             pgtype.Numeric   `json:"twap_max_price"`
+	ParentID                 pgtype.Int8      `json:"parentId"`
+	TwapIntervalSeconds      pgtype.Int4      `json:"twapIntervalSeconds"`
+	TwapExecutedTimes        pgtype.Int4      `json:"twapExecutedTimes"`
+	TwapCurrentExecutedTimes pgtype.Int4      `json:"twapCurrentExecutedTimes"`
+	TwapMinPrice             pgtype.Numeric   `json:"twapMinPrice"`
+	TwapMaxPrice             pgtype.Numeric   `json:"twapMaxPrice"`
 	Deadline                 pgtype.Timestamp `json:"deadline"`
-	PartialFilledAt          pgtype.Timestamp `json:"partial_filled_at"`
-	FilledAt                 pgtype.Timestamp `json:"filled_at"`
-	RejectedAt               pgtype.Timestamp `json:"rejected_at"`
-	CancelledAt              pgtype.Timestamp `json:"cancelled_at"`
-	CreatedAt                pgtype.Timestamp `json:"created_at"`
+	PartialFilledAt          pgtype.Timestamp `json:"partialFilledAt"`
+	FilledAt                 pgtype.Timestamp `json:"filledAt"`
+	RejectedAt               pgtype.Timestamp `json:"rejectedAt"`
+	CancelledAt              pgtype.Timestamp `json:"cancelledAt"`
+	CreatedAt                pgtype.Timestamp `json:"createdAt"`
 }
 
 type Pool struct {
 	ID        string             `json:"id"`
-	Token0ID  string             `json:"token0_id"`
-	Token1ID  string             `json:"token1_id"`
-	CreatedAt pgtype.Timestamptz `json:"created_at"`
+	Token0ID  string             `json:"token0Id"`
+	Token1ID  string             `json:"token1Id"`
+	CreatedAt pgtype.Timestamptz `json:"createdAt"`
 }
 
 type Price struct {
 	ID             int64            `json:"id"`
-	PoolID         string           `json:"pool_id"`
-	BlockNumber    int64            `json:"block_number"`
-	BlockTimestamp int64            `json:"block_timestamp"`
+	PoolID         string           `json:"poolId"`
+	BlockNumber    int64            `json:"blockNumber"`
+	BlockTimestamp int64            `json:"blockTimestamp"`
 	Sender         string           `json:"sender"`
 	Recipient      string           `json:"recipient"`
 	Amount0        int64            `json:"amount0"`
 	Amount1        int64            `json:"amount1"`
-	SqrtPriceX96   int64            `json:"sqrt_price_x96"`
+	SqrtPriceX96   int64            `json:"sqrtPriceX96"`
 	Liquidity      int64            `json:"liquidity"`
 	Tick           int32            `json:"tick"`
-	PriceUsd       pgtype.Numeric   `json:"price_usd"`
-	TimestampUtc   pgtype.Timestamp `json:"timestamp_utc"`
-	CreatedAt      pgtype.Timestamp `json:"created_at"`
+	PriceUsd       pgtype.Numeric   `json:"priceUsd"`
+	TimestampUtc   pgtype.Timestamp `json:"timestampUtc"`
+	CreatedAt      pgtype.Timestamp `json:"createdAt"`
 }
 
 type Token struct {
@@ -206,6 +206,6 @@ type Token struct {
 	Name      string             `json:"name"`
 	Symbol    string             `json:"symbol"`
 	Decimals  int32              `json:"decimals"`
-	IsStable  bool               `json:"is_stable"`
-	CreatedAt pgtype.Timestamptz `json:"created_at"`
+	IsStable  bool               `json:"isStable"`
+	CreatedAt pgtype.Timestamptz `json:"createdAt"`
 }

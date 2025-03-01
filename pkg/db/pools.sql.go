@@ -17,8 +17,8 @@ RETURNING id, token0_id, token1_id, created_at
 
 type CreatePoolParams struct {
 	ID       string `json:"id"`
-	Token0ID string `json:"token0_id"`
-	Token1ID string `json:"token1_id"`
+	Token0ID string `json:"token0Id"`
+	Token1ID string `json:"token1Id"`
 }
 
 func (q *Queries) CreatePool(ctx context.Context, arg CreatePoolParams) (Pool, error) {
@@ -56,8 +56,8 @@ WHERE token0_id = $1 AND token1_id = $2 LIMIT 1
 `
 
 type GetPoolByTokenParams struct {
-	Token0ID string `json:"token0_id"`
-	Token1ID string `json:"token1_id"`
+	Token0ID string `json:"token0Id"`
+	Token1ID string `json:"token1Id"`
 }
 
 func (q *Queries) GetPoolByToken(ctx context.Context, arg GetPoolByTokenParams) (Pool, error) {
@@ -152,16 +152,16 @@ WHERE pools.id = $1
 
 type PoolDetailsRow struct {
 	ID             string `json:"id"`
-	Token0ID       string `json:"token0_id"`
-	Token1ID       string `json:"token1_id"`
-	Token0Name     string `json:"token0_name"`
-	Token0Symbol   string `json:"token0_symbol"`
-	Token0Decimals int32  `json:"token0_decimals"`
-	Token0IsStable bool   `json:"token0_is_stable"`
-	Token1Name     string `json:"token1_name"`
-	Token1Symbol   string `json:"token1_symbol"`
-	Token1Decimals int32  `json:"token1_decimals"`
-	Token1IsStable bool   `json:"token1_is_stable"`
+	Token0ID       string `json:"token0Id"`
+	Token1ID       string `json:"token1Id"`
+	Token0Name     string `json:"token0Name"`
+	Token0Symbol   string `json:"token0Symbol"`
+	Token0Decimals int32  `json:"token0Decimals"`
+	Token0IsStable bool   `json:"token0IsStable"`
+	Token1Name     string `json:"token1Name"`
+	Token1Symbol   string `json:"token1Symbol"`
+	Token1Decimals int32  `json:"token1Decimals"`
+	Token1IsStable bool   `json:"token1IsStable"`
 }
 
 func (q *Queries) PoolDetails(ctx context.Context, id string) (PoolDetailsRow, error) {

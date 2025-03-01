@@ -15,8 +15,8 @@ WHERE pool_address = $1 AND is_backfill = $2
 `
 
 type GetBlockProcessingStateParams struct {
-	PoolAddress string `json:"pool_address"`
-	IsBackfill  bool   `json:"is_backfill"`
+	PoolAddress string `json:"poolAddress"`
+	IsBackfill  bool   `json:"isBackfill"`
 }
 
 func (q *Queries) GetBlockProcessingState(ctx context.Context, arg GetBlockProcessingStateParams) (BlockProcessingState, error) {
@@ -47,9 +47,9 @@ SET
 `
 
 type UpsertBlockProcessingStateParams struct {
-	PoolAddress        string `json:"pool_address"`
-	LastProcessedBlock int64  `json:"last_processed_block"`
-	IsBackfill         bool   `json:"is_backfill"`
+	PoolAddress        string `json:"poolAddress"`
+	LastProcessedBlock int64  `json:"lastProcessedBlock"`
+	IsBackfill         bool   `json:"isBackfill"`
 }
 
 func (q *Queries) UpsertBlockProcessingState(ctx context.Context, arg UpsertBlockProcessingStateParams) error {

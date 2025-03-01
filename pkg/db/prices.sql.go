@@ -19,8 +19,8 @@ RETURNING id, pool_id, block_number, block_timestamp, sender, recipient, amount0
 
 type CreatePriceParams struct {
 	ID       int64          `json:"id"`
-	PoolID   string         `json:"pool_id"`
-	PriceUsd pgtype.Numeric `json:"price_usd"`
+	PoolID   string         `json:"poolId"`
+	PriceUsd pgtype.Numeric `json:"priceUsd"`
 }
 
 func (q *Queries) CreatePrice(ctx context.Context, arg CreatePriceParams) (Price, error) {
@@ -61,18 +61,18 @@ ORDER BY bucket_time DESC
 `
 
 type GetMarketDataParams struct {
-	TimeBucket interface{} `json:"time_bucket"`
-	PoolID     string      `json:"pool_id"`
+	TimeBucket interface{} `json:"timeBucket"`
+	PoolID     string      `json:"poolId"`
 }
 
 type GetMarketDataRow struct {
-	BucketTime     interface{} `json:"bucket_time"`
-	OpenPrice      interface{} `json:"open_price"`
-	HighPrice      interface{} `json:"high_price"`
-	LowPrice       interface{} `json:"low_price"`
-	ClosePrice     interface{} `json:"close_price"`
-	AvgPrice       float64     `json:"avg_price"`
-	NumberOfTrades int64       `json:"number_of_trades"`
+	BucketTime     interface{} `json:"bucketTime"`
+	OpenPrice      interface{} `json:"openPrice"`
+	HighPrice      interface{} `json:"highPrice"`
+	LowPrice       interface{} `json:"lowPrice"`
+	ClosePrice     interface{} `json:"closePrice"`
+	AvgPrice       float64     `json:"avgPrice"`
+	NumberOfTrades int64       `json:"numberOfTrades"`
 }
 
 func (q *Queries) GetMarketData(ctx context.Context, arg GetMarketDataParams) ([]GetMarketDataRow, error) {
