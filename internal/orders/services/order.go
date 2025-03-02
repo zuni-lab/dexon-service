@@ -110,6 +110,26 @@ func CreateOrder(ctx context.Context, body CreateOrderBody) (*db.Order, error) {
 	return &order, nil
 }
 
+type CancelOrderBody struct {
+	ID     int64
+	Wallet string `json:"wallet" validate:"eth_addr"`
+}
+
+func CancelOrder(ctx context.Context, body CancelOrderBody) (*db.Order, error) {
+	var params db.CancelOrderParams
+	if err := copier.Copy(&params, &body); err != nil {
+		return nil, err
+	}
+
+	_ = params.CancelledAt.Scan(time.Now())
+	order, err := db.DB.CancelOrder(ctx, params)
+	if err != nil {
+		return nil, err
+	}
+
+	return &order, nil
+}
+
 func fillPartialOrder(ctx context.Context, parent db.Order, price, amount string) (*db.Order, error) {
 	params := db.InsertOrderParams{
 		PoolIds:                  parent.PoolIds,

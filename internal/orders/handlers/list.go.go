@@ -9,11 +9,9 @@ import (
 )
 
 func List(c echo.Context) error {
-
 	var (
 		query services.ListOrdersByWalletQuery
-		
-		ctx = c.Request().Context()
+		ctx   = c.Request().Context()
 	)
 	if err := utils.BindAndValidate(c, &query); err != nil {
 		return err

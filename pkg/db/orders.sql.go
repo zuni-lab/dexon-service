@@ -11,6 +11,53 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const cancelOrder = `-- name: CancelOrder :one
+UPDATE orders
+SET
+    status = 'CANCELLED',
+    cancelled_at = $1
+WHERE id = $2 AND wallet = $3 AND status NOT IN ('REJECTED', 'FILLED')
+RETURNING id, pool_ids, paths, wallet, status, side, type, price, amount, slippage, signature, nonce, parent_id, twap_interval_seconds, twap_executed_times, twap_current_executed_times, twap_min_price, twap_max_price, deadline, partial_filled_at, filled_at, rejected_at, cancelled_at, created_at
+`
+
+type CancelOrderParams struct {
+	CancelledAt pgtype.Timestamp `json:"cancelledAt"`
+	ID          int64            `json:"id"`
+	Wallet      pgtype.Text      `json:"wallet"`
+}
+
+func (q *Queries) CancelOrder(ctx context.Context, arg CancelOrderParams) (Order, error) {
+	row := q.db.QueryRow(ctx, cancelOrder, arg.CancelledAt, arg.ID, arg.Wallet)
+	var i Order
+	err := row.Scan(
+		&i.ID,
+		&i.PoolIds,
+		&i.Paths,
+		&i.Wallet,
+		&i.Status,
+		&i.Side,
+		&i.Type,
+		&i.Price,
+		&i.Amount,
+		&i.Slippage,
+		&i.Signature,
+		&i.Nonce,
+		&i.ParentID,
+		&i.TwapIntervalSeconds,
+		&i.TwapExecutedTimes,
+		&i.TwapCurrentExecutedTimes,
+		&i.TwapMinPrice,
+		&i.TwapMaxPrice,
+		&i.Deadline,
+		&i.PartialFilledAt,
+		&i.FilledAt,
+		&i.RejectedAt,
+		&i.CancelledAt,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
 const getMatchedOrder = `-- name: GetMatchedOrder :one
 SELECT id, pool_ids, paths, wallet, status, side, type, price, amount, slippage, signature, nonce, parent_id, twap_interval_seconds, twap_executed_times, twap_current_executed_times, twap_min_price, twap_max_price, deadline, partial_filled_at, filled_at, rejected_at, cancelled_at, created_at FROM orders
 WHERE (

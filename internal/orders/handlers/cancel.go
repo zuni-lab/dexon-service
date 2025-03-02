@@ -10,25 +10,26 @@ import (
 	"github.com/zuni-lab/dexon-service/pkg/utils"
 )
 
-func Get(c echo.Context) error {
+func Cancel(c echo.Context) error {
 	var (
-		query services.GetOrderByIDQuery
-		err   error
-		ctx   = c.Request().Context()
+		body services.CancelOrderBody
+		err  error
+		ctx  = c.Request().Context()
 	)
-	if err := utils.BindAndValidate(c, &query); err != nil {
+
+	if err := utils.BindAndValidate(c, &body); err != nil {
 		return err
 	}
 
-	query.ID, err = strconv.ParseInt(c.Param("id"), 10, 64)
+	body.ID, err = strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, errors.New("invalid id"))
 	}
 
-	order, err := services.GetOrderByID(ctx, query)
+	order, err := services.CancelOrder(ctx, body)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
 
-	return utils.OkResponse(c, http.StatusOK, order)
+	return c.JSON(http.StatusOK, order)
 }

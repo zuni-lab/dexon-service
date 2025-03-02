@@ -62,3 +62,11 @@ SET
     rejected_at = COALESCE($7, rejected_at)
 WHERE id = $1
 RETURNING *;
+
+-- name: CancelOrder :one
+UPDATE orders
+SET
+    status = 'CANCELLED',
+    cancelled_at = $1
+WHERE id = $2 AND wallet = $3 AND status NOT IN ('REJECTED', 'FILLED')
+RETURNING *;

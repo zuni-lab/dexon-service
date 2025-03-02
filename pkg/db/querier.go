@@ -11,6 +11,7 @@ import (
 )
 
 type Querier interface {
+	CancelOrder(ctx context.Context, arg CancelOrderParams) (Order, error)
 	CreatePool(ctx context.Context, arg CreatePoolParams) (Pool, error)
 	CreatePrice(ctx context.Context, arg CreatePriceParams) (Price, error)
 	CreateToken(ctx context.Context, arg CreateTokenParams) (Token, error)

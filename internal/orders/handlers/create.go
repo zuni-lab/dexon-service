@@ -9,9 +9,11 @@ import (
 )
 
 func Create(c echo.Context) error {
-	ctx := c.Request().Context()
+	var (
+		body services.CreateOrderBody
+		ctx  = c.Request().Context()
+	)
 
-	var body services.CreateOrderBody
 	if err := utils.BindAndValidate(c, &body); err != nil {
 		return err
 	}
