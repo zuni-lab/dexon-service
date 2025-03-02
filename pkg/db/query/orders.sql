@@ -44,8 +44,7 @@ WHERE (
         OR (side = 'SELL' AND type = 'LIMIT' AND price >= $1)
         OR (side = 'BUY' AND type = 'STOP' AND price >= $1)
         OR (side = 'SELL' AND type = 'STOP' AND price <= $1)
-        OR (side = 'BUY' AND type = 'TWAP' AND price <= $1)
-        OR (side = 'SELL' AND type = 'TWAP' AND price >= $1)
+        OR (type = 'TWAP' AND price BETWEEN twap_min_price AND twap_max_price)
     )
     AND status IN ('PENDING', 'PARTIAL_FILLED')
     AND (
