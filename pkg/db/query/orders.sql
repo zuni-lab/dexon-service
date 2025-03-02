@@ -48,6 +48,10 @@ WHERE (
         OR (side = 'SELL' AND type = 'TWAP' AND price >= $1)
     )
     AND status IN ('PENDING', 'PARTIAL_FILLED')
+    AND (
+        deadline IS NULL
+        OR deadline >= NOW()
+    )
 ORDER BY created_at ASC
 LIMIT 1;
 
