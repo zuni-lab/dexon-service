@@ -58,54 +58,46 @@ func (q *Queries) GetMatchedOrder(ctx context.Context, price pgtype.Numeric) (Or
 	return i, err
 }
 
-const getOrdersByStatus = `-- name: GetOrdersByStatus :many
+const getOrderByID = `-- name: GetOrderByID :one
 SELECT id, pool_ids, paths, wallet, status, side, type, price, amount, slippage, signature, nonce, parent_id, twap_interval_seconds, twap_executed_times, twap_current_executed_times, twap_min_price, twap_max_price, deadline, partial_filled_at, filled_at, rejected_at, cancelled_at, created_at FROM orders
-WHERE status = ANY($1::varchar[])
+WHERE wallet = $1 AND id = $2
 `
 
-func (q *Queries) GetOrdersByStatus(ctx context.Context, status []string) ([]Order, error) {
-	rows, err := q.db.Query(ctx, getOrdersByStatus, status)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []Order{}
-	for rows.Next() {
-		var i Order
-		if err := rows.Scan(
-			&i.ID,
-			&i.PoolIds,
-			&i.Paths,
-			&i.Wallet,
-			&i.Status,
-			&i.Side,
-			&i.Type,
-			&i.Price,
-			&i.Amount,
-			&i.Slippage,
-			&i.Signature,
-			&i.Nonce,
-			&i.ParentID,
-			&i.TwapIntervalSeconds,
-			&i.TwapExecutedTimes,
-			&i.TwapCurrentExecutedTimes,
-			&i.TwapMinPrice,
-			&i.TwapMaxPrice,
-			&i.Deadline,
-			&i.PartialFilledAt,
-			&i.FilledAt,
-			&i.RejectedAt,
-			&i.CancelledAt,
-			&i.CreatedAt,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
+type GetOrderByIDParams struct {
+	Wallet pgtype.Text `json:"wallet"`
+	ID     int64       `json:"id"`
+}
+
+func (q *Queries) GetOrderByID(ctx context.Context, arg GetOrderByIDParams) (Order, error) {
+	row := q.db.QueryRow(ctx, getOrderByID, arg.Wallet, arg.ID)
+	var i Order
+	err := row.Scan(
+		&i.ID,
+		&i.PoolIds,
+		&i.Paths,
+		&i.Wallet,
+		&i.Status,
+		&i.Side,
+		&i.Type,
+		&i.Price,
+		&i.Amount,
+		&i.Slippage,
+		&i.Signature,
+		&i.Nonce,
+		&i.ParentID,
+		&i.TwapIntervalSeconds,
+		&i.TwapExecutedTimes,
+		&i.TwapCurrentExecutedTimes,
+		&i.TwapMinPrice,
+		&i.TwapMaxPrice,
+		&i.Deadline,
+		&i.PartialFilledAt,
+		&i.FilledAt,
+		&i.RejectedAt,
+		&i.CancelledAt,
+		&i.CreatedAt,
+	)
+	return i, err
 }
 
 const getOrdersByWallet = `-- name: GetOrdersByWallet :many

@@ -37,6 +37,25 @@ func ListOrderByWallet(ctx context.Context, query ListOrdersByWalletQuery) ([]db
 	return orders, nil
 }
 
+type GetOrderByIDQuery struct {
+	ID     int64
+	Wallet string `query:"wallet" validate:"eth_addr"`
+}
+
+func GetOrderByID(ctx context.Context, query GetOrderByIDQuery) (*db.Order, error) {
+	var params db.GetOrderByIDParams
+	if err := copier.Copy(&params, &query); err != nil {
+		return nil, err
+	}
+
+	order, err := db.DB.GetOrderByID(ctx, params)
+	if err != nil {
+		return nil, err
+	}
+
+	return &order, nil
+}
+
 type CreateOrderBody struct {
 	Wallet        string       `json:"wallet" validate:"eth_addr"`
 	PoolIDs       []string     `json:"poolIds" validate:"min=1,dive,eth_addr"`

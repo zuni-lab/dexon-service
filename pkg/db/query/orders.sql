@@ -33,9 +33,9 @@ WHERE wallet = $1
 ORDER BY created_at DESC
 LIMIT $2 OFFSET $3;
 
--- name: GetOrdersByStatus :many
+-- name: GetOrderByID :one
 SELECT * FROM orders
-WHERE status = ANY(@status::varchar[]);
+WHERE wallet = $1 AND id = $2;
 
 -- name: GetMatchedOrder :one
 SELECT * FROM orders

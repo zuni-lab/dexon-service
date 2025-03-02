@@ -17,7 +17,7 @@ type Querier interface {
 	GetBlockProcessingState(ctx context.Context, arg GetBlockProcessingStateParams) (BlockProcessingState, error)
 	GetMarketData(ctx context.Context, arg GetMarketDataParams) ([]GetMarketDataRow, error)
 	GetMatchedOrder(ctx context.Context, price pgtype.Numeric) (Order, error)
-	GetOrdersByStatus(ctx context.Context, status []string) ([]Order, error)
+	GetOrderByID(ctx context.Context, arg GetOrderByIDParams) (Order, error)
 	GetOrdersByWallet(ctx context.Context, arg GetOrdersByWalletParams) ([]Order, error)
 	GetPool(ctx context.Context, id string) (Pool, error)
 	GetPoolByToken(ctx context.Context, arg GetPoolByTokenParams) (Pool, error)
