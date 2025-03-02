@@ -57,20 +57,19 @@ func GetOrderByID(ctx context.Context, query GetOrderByIDQuery) (*db.Order, erro
 }
 
 type CreateOrderBody struct {
-	Wallet        string       `json:"wallet" validate:"eth_addr"`
-	PoolIDs       []string     `json:"poolIds" validate:"min=1,dive,eth_addr"`
-	Side          db.OrderSide `json:"side" validate:"oneof=BUY SELL"`
-	Type          db.OrderType `json:"type" validate:"oneof=MARKET LIMIT STOP TWAP"`
-	Price         *string      `json:"price" validate:"required_unless=Type TWAP,numeric,gt=0"`
-	Amount        string       `json:"amount" validate:"numeric,gt=0"`
-	TwapTotalTime *int32       `json:"twapTotalTime" validate:"omitempty,gt=0"`
-	Slippage      float64      `json:"slippage" validate:"gte=0"`
-	Signature     string       `json:"signature" validate:"max=130"`
-	Paths         string       `json:"paths" validate:"max=256"`
-	Deadline      *time.Time   `json:"deadline" validate:"omitempty,datetime=2006-01-02 15:04:05"`
+	Wallet    string       `json:"wallet" validate:"eth_addr"`
+	PoolIDs   []string     `json:"poolIds" validate:"min=1,dive,eth_addr"`
+	Side      db.OrderSide `json:"side" validate:"oneof=BUY SELL"`
+	Type      db.OrderType `json:"type" validate:"oneof=MARKET LIMIT STOP TWAP"`
+	Price     *string      `json:"price" validate:"required_unless=Type TWAP,numeric,gt=0"`
+	Amount    string       `json:"amount" validate:"numeric,gt=0"`
+	Slippage  float64      `json:"slippage" validate:"gte=0"`
+	Signature string       `json:"signature" validate:"max=130"`
+	Paths     string       `json:"paths" validate:"max=256"`
+	Deadline  *time.Time   `json:"deadline" validate:"omitempty,datetime=2006-01-02 15:04:05"`
 
-	TwapIntervalSeconds *int32  `json:"twapIntervalSeconds" validate:"required_if=Type TWAP,gt=59"`
-	TwapExecutedTimes   *int32  `json:"twapExecutedTimes" validate:"required_if=Type TWAP,gt=0"`
+	TwapIntervalSeconds *int64  `json:"twapIntervalSeconds" validate:"required_if=Type TWAP,gt=59"`
+	TwapExecutedTimes   *int64  `json:"twapExecutedTimes" validate:"required_if=Type TWAP,gt=0"`
 	TwapMinPrice        *string `json:"twapMinPrice" validate:"omitempty,numeric,gte=0"`
 	TwapMaxPrice        *string `json:"twapMaxPrice" validate:"required_with=TwapMinPrice,numeric,gtefield=TwapMinPrice"`
 }
@@ -130,34 +129,6 @@ func CancelOrder(ctx context.Context, body CancelOrderBody) (*db.Order, error) {
 	return &order, nil
 }
 
-func fillPartialOrder(ctx context.Context, parent db.Order, price, amount string) (*db.Order, error) {
-	params := db.InsertOrderParams{
-		PoolIds:                  parent.PoolIds,
-		Wallet:                   parent.Wallet,
-		Status:                   db.OrderStatusFILLED,
-		Side:                     parent.Side,
-		Type:                     db.OrderTypeTWAP,
-		Amount:                   parent.Amount,
-		Slippage:                 parent.Slippage,
-		TwapIntervalSeconds:      parent.TwapIntervalSeconds,
-		TwapExecutedTimes:        parent.TwapExecutedTimes,
-		TwapCurrentExecutedTimes: parent.TwapCurrentExecutedTimes,
-		TwapMinPrice:             parent.TwapMinPrice,
-		TwapMaxPrice:             parent.TwapMaxPrice,
-	}
-	_ = params.ParentID.Scan(parent.ID)
-	_ = params.Price.Scan(price)
-	_ = params.Amount.Scan(amount)
-	_ = params.FilledAt.Scan(time.Now())
-
-	order, err := db.DB.InsertOrder(ctx, params)
-	if err != nil {
-		return nil, err
-	}
-
-	return &order, nil
-}
-
 func MatchOrder(ctx context.Context, price *big.Float) (*db.Order, error) {
 	numericPrice, err := utils.BigFloatToNumeric(price)
 	if err != nil {
@@ -174,31 +145,93 @@ func MatchOrder(ctx context.Context, price *big.Float) (*db.Order, error) {
 
 	log.Info().Any("matched orders", order).Msg("Matched order")
 
-	// TODO: Call to contract
-
-	params := db.UpdateOrderParams{
-		ID: order.ID,
-	}
-	if order.Type == db.OrderTypeLIMIT ||
-		order.Type == db.OrderTypeSTOP ||
-		order.Type == db.OrderTypeTWAP && order.TwapCurrentExecutedTimes.Int32+1 == order.TwapExecutedTimes.Int32 {
-		_ = params.FilledAt.Scan(time.Now())
-		params.Status = db.OrderStatusFILLED
-
-		if order.Type == db.OrderTypeTWAP {
-			order.TwapCurrentExecutedTimes.Int32 = order.TwapExecutedTimes.Int32
-		}
-	} else if order.Type == db.OrderTypeTWAP {
-		params.Status = db.OrderStatusPARTIALFILLED
-		// TODO: create child order
+	var filledOrder *db.Order
+	if order.Type == db.OrderTypeTWAP {
+		filledOrder, err = fillTwapOrder(ctx, &order, price)
 	} else {
-		return nil, errors.New("invalid order")
+		filledOrder, err = fillOrder(ctx, &order)
 	}
 
-	order, err = db.DB.UpdateOrder(ctx, params)
 	if err != nil {
 		return nil, err
 	}
 
-	return &order, nil
+	return filledOrder, nil
+}
+
+func fillOrder(ctx context.Context, order *db.Order) (*db.Order, error) {
+	params := db.FillOrderParams{
+		ID: order.ID,
+	}
+	_ = params.FilledAt.Scan(time.Now())
+
+	filledOrder, err := db.DB.FillOrder(ctx, params)
+	if err != nil {
+		return nil, err
+	}
+
+	// TODO: Call to contract
+
+	return &filledOrder, nil
+}
+
+func fillTwapOrder(ctx context.Context, order *db.Order, price *big.Float) (*db.Order, error) {
+	params := db.FillTwapOrderParams{
+		ID:                       order.ID,
+		TwapCurrentExecutedTimes: order.TwapExecutedTimes,
+	}
+	_ = params.FilledAt.Scan(time.Now())
+
+	var err error
+	if order.TwapCurrentExecutedTimes.Int32+1 == order.TwapExecutedTimes.Int32 {
+		_ = params.FilledAt.Scan(time.Now())
+		params.Status = db.OrderStatusFILLED
+	} else {
+		params.Status = db.OrderStatusPARTIALFILLED
+	}
+
+	amount := calculateTwapAmount(order)
+	err = fillPartialOrder(ctx, order, price, amount)
+	if err != nil {
+		return nil, err
+	}
+
+	// TODO: Call to contract
+
+	filledOrder, err := db.DB.FillTwapOrder(ctx, params)
+	if err != nil {
+		return nil, err
+	}
+
+	return &filledOrder, nil
+}
+
+func calculateTwapAmount(order *db.Order) *big.Float {
+	divisor := big.NewFloat(float64(order.TwapCurrentExecutedTimes.Int32))
+	f64Amount, _ := order.Amount.Float64Value()
+	bigAmount := big.NewFloat(f64Amount.Float64)
+
+	return new(big.Float).Quo(bigAmount, divisor)
+}
+
+func fillPartialOrder(ctx context.Context, parent *db.Order, price, amount *big.Float) error {
+	params := db.InsertOrderParams{
+		PoolIds: parent.PoolIds,
+		Wallet:  parent.Wallet,
+		Status:  db.OrderStatusFILLED,
+		Side:    parent.Side,
+		Type:    db.OrderTypeTWAP,
+		Amount:  parent.Amount,
+	}
+	_ = params.ParentID.Scan(parent.ID)
+	_ = params.Price.Scan(price.String())
+	_ = params.Amount.Scan(amount.String())
+	_ = params.FilledAt.Scan(time.Now())
+
+	_, err := db.DB.InsertOrder(ctx, params)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

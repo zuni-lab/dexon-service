@@ -15,6 +15,8 @@ type Querier interface {
 	CreatePool(ctx context.Context, arg CreatePoolParams) (Pool, error)
 	CreatePrice(ctx context.Context, arg CreatePriceParams) (Price, error)
 	CreateToken(ctx context.Context, arg CreateTokenParams) (Token, error)
+	FillOrder(ctx context.Context, arg FillOrderParams) (Order, error)
+	FillTwapOrder(ctx context.Context, arg FillTwapOrderParams) (Order, error)
 	GetBlockProcessingState(ctx context.Context, arg GetBlockProcessingStateParams) (BlockProcessingState, error)
 	GetMarketData(ctx context.Context, arg GetMarketDataParams) ([]GetMarketDataRow, error)
 	GetMatchedOrder(ctx context.Context, price pgtype.Numeric) (Order, error)
@@ -28,7 +30,6 @@ type Querier interface {
 	GetPrices(ctx context.Context, arg GetPricesParams) ([]Price, error)
 	InsertOrder(ctx context.Context, arg InsertOrderParams) (Order, error)
 	PoolDetails(ctx context.Context, id string) (PoolDetailsRow, error)
-	UpdateOrder(ctx context.Context, arg UpdateOrderParams) (Order, error)
 	UpsertBlockProcessingState(ctx context.Context, arg UpsertBlockProcessingStateParams) error
 }
 
