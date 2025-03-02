@@ -18,6 +18,18 @@ RETURNING *;
 -- name: GetOrdersByWallet :many
 SELECT * FROM orders
 WHERE wallet = $1
+    AND (
+        ARRAY_LENGTH(@status::order_status[], 1) IS NULL
+        OR status = ANY(@status)
+    )
+    AND (
+        ARRAY_LENGTH(@types::order_type[], 1) IS NULL
+        OR type = ANY(@types)
+    )
+    AND (
+        sqlc.narg(side)::order_side IS NULL
+        OR side = @side
+    )
 ORDER BY created_at DESC
 LIMIT $2 OFFSET $3;
 

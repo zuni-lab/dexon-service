@@ -2,16 +2,22 @@ package db
 
 import (
 	"context"
-
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/rs/zerolog/log"
 )
 
 func Init(ctx context.Context, dbSource string, migrationURL string) {
-	connPool, err := pgxpool.New(ctx, dbSource)
+	config, err := pgxpool.ParseConfig(dbSource)
+	if err != nil {
+		log.Fatal().Err(err).Msg("cannot parse db config")
+	}
+	registerTypes(config)
+
+	connPool, err := pgxpool.NewWithConfig(ctx, config)
 	if err != nil {
 		log.Fatal().Err(err).Msg("cannot connect to db")
 	}
@@ -19,6 +25,36 @@ func Init(ctx context.Context, dbSource string, migrationURL string) {
 	runDBMigration(migrationURL, dbSource)
 
 	DB = NewStore(connPool)
+}
+
+func registerTypes(config *pgxpool.Config) {
+	config.AfterConnect = func(ctx context.Context, conn *pgx.Conn) error {
+		t, err := conn.LoadType(ctx, "order_type")
+		if err != nil {
+			return err
+		}
+		conn.TypeMap().RegisterType(t)
+
+		t, err = conn.LoadType(ctx, "_order_type")
+		if err != nil {
+			return err
+		}
+		conn.TypeMap().RegisterType(t)
+
+		t, err = conn.LoadType(ctx, "order_status")
+		if err != nil {
+			return err
+		}
+		conn.TypeMap().RegisterType(t)
+
+		t, err = conn.LoadType(ctx, "_order_status")
+		if err != nil {
+			return err
+		}
+		conn.TypeMap().RegisterType(t)
+
+		return err
+	}
 }
 
 func runDBMigration(migrationURL string, dbSource string) {

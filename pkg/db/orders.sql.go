@@ -111,18 +111,40 @@ func (q *Queries) GetOrdersByStatus(ctx context.Context, status []string) ([]Ord
 const getOrdersByWallet = `-- name: GetOrdersByWallet :many
 SELECT id, pool_ids, paths, wallet, status, side, type, price, amount, slippage, signature, nonce, parent_id, twap_interval_seconds, twap_executed_times, twap_current_executed_times, twap_min_price, twap_max_price, deadline, partial_filled_at, filled_at, rejected_at, cancelled_at, created_at FROM orders
 WHERE wallet = $1
+    AND (
+        ARRAY_LENGTH($4::order_status[], 1) IS NULL
+        OR status = ANY($4)
+    )
+    AND (
+        ARRAY_LENGTH($5::order_type[], 1) IS NULL
+        OR type = ANY($5)
+    )
+    AND (
+        $6::order_side IS NULL
+        OR side = $6
+    )
 ORDER BY created_at DESC
 LIMIT $2 OFFSET $3
 `
 
 type GetOrdersByWalletParams struct {
-	Wallet pgtype.Text `json:"wallet"`
-	Limit  int32       `json:"limit"`
-	Offset int32       `json:"offset"`
+	Wallet pgtype.Text   `json:"wallet"`
+	Limit  int32         `json:"limit"`
+	Offset int32         `json:"offset"`
+	Status []OrderStatus `json:"status"`
+	Types  []OrderType   `json:"types"`
+	Side   NullOrderSide `json:"side"`
 }
 
 func (q *Queries) GetOrdersByWallet(ctx context.Context, arg GetOrdersByWalletParams) ([]Order, error) {
-	rows, err := q.db.Query(ctx, getOrdersByWallet, arg.Wallet, arg.Limit, arg.Offset)
+	rows, err := q.db.Query(ctx, getOrdersByWallet,
+		arg.Wallet,
+		arg.Limit,
+		arg.Offset,
+		arg.Status,
+		arg.Types,
+		arg.Side,
+	)
 	if err != nil {
 		return nil, err
 	}

@@ -6,7 +6,7 @@ import (
 )
 
 // ExecTx executes a function within a database transaction
-func (store *sqlStore) execTx(ctx context.Context, fn func(*Queries) error) error {
+func (store *SqlStore) execTx(ctx context.Context, fn func(*Queries) error) error {
 	tx, err := store.connPool.Begin(ctx)
 	if err != nil {
 		return err

@@ -14,7 +14,7 @@ type CreatePoolTxResult struct {
 	Pool Pool
 }
 
-func (store *sqlStore) CreatePoolTx(ctx context.Context, arg PoolDetailsRow) (CreatePoolTxResult, error) {
+func (store *SqlStore) CreatePoolTx(ctx context.Context, arg PoolDetailsRow) (CreatePoolTxResult, error) {
 	var result CreatePoolTxResult
 
 	err := store.execTx(ctx, func(q *Queries) error {
@@ -68,7 +68,7 @@ type CreateBatchPoolsTxResult struct {
 	Pools []Pool
 }
 
-func (store *sqlStore) CreateBatchPoolsTx(ctx context.Context, arg CreateBatchPoolsTxParams) (CreateBatchPoolsTxResult, error) {
+func (store *SqlStore) CreateBatchPoolsTx(ctx context.Context, arg CreateBatchPoolsTxParams) (CreateBatchPoolsTxResult, error) {
 	var result CreateBatchPoolsTxResult
 	result.Pools = make([]Pool, 0, len(arg.Pools))
 

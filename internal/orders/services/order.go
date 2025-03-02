@@ -15,9 +15,12 @@ import (
 )
 
 type ListOrdersByWalletQuery struct {
-	Wallet string `query:"wallet" validate:"eth_addr"`
-	Limit  int32  `query:"limit" validate:"gt=0"`
-	Offset int32  `query:"offset" validate:"gte=0"`
+	Wallet string           `query:"wallet" validate:"eth_addr"`
+	Status []db.OrderStatus `query:"status" validate:"dive,oneof=PENDING PARTIAL_FILLED FILLED REJECTED CANCELLED"`
+	Types  []db.OrderType   `query:"types" validate:"dive,oneof=MARKET LIMIT STOP TWAP"`
+	Side   *string          `query:"side" validate:"omitempty,oneof=BUY SELL"`
+	Limit  int32            `query:"limit" validate:"gt=0"`
+	Offset int32            `query:"offset" validate:"gte=0"`
 }
 
 func ListOrderByWallet(ctx context.Context, query ListOrdersByWalletQuery) ([]db.Order, error) {
@@ -39,7 +42,7 @@ type CreateOrderBody struct {
 	PoolIDs       []string     `json:"poolIds" validate:"min=1,dive,eth_addr"`
 	Side          db.OrderSide `json:"side" validate:"oneof=BUY SELL"`
 	Type          db.OrderType `json:"type" validate:"oneof=MARKET LIMIT STOP TWAP"`
-	Price         string       `json:"price" validate:"numeric,gt=0"`
+	Price         *string      `json:"price" validate:"required_unless=Type TWAP,numeric,gt=0"`
 	Amount        string       `json:"amount" validate:"numeric,gt=0"`
 	TwapTotalTime *int32       `json:"twapTotalTime" validate:"omitempty,gt=0"`
 	Slippage      float64      `json:"slippage" validate:"gte=0"`
@@ -49,8 +52,8 @@ type CreateOrderBody struct {
 
 	TwapIntervalSeconds *int32  `json:"twapIntervalSeconds" validate:"required_if=Type TWAP,gt=59"`
 	TwapExecutedTimes   *int32  `json:"twapExecutedTimes" validate:"required_if=Type TWAP,gt=0"`
-	TwapMinPrice        *string `json:"twapMinPrice" validate:"required_if=Type TWAP,numeric,gte=0"`
-	TwapMaxPrice        *string `json:"twapMaxPrice" validate:"required_if=Type TWAP,numeric,gtefield=TwapMinPrice"`
+	TwapMinPrice        *string `json:"twapMinPrice" validate:"omitempty,numeric,gte=0"`
+	TwapMaxPrice        *string `json:"twapMaxPrice" validate:"required_with=TwapMinPrice,numeric,gtefield=TwapMinPrice"`
 }
 
 func CreateOrder(ctx context.Context, body CreateOrderBody) (*db.Order, error) {
@@ -59,11 +62,18 @@ func CreateOrder(ctx context.Context, body CreateOrderBody) (*db.Order, error) {
 		return nil, err
 	}
 
+	now := time.Now()
+	_ = params.CreatedAt.Scan(now)
 	if params.Type == db.OrderTypeMARKET {
+		_ = params.FilledAt.Scan(now)
+		params.CreatedAt = params.FilledAt
 		params.Status = db.OrderStatusFILLED
-		_ = params.FilledAt.Scan(time.Now())
 	} else {
 		params.Status = db.OrderStatusPENDING
+
+		if params.Type == db.OrderTypeTWAP {
+			_ = params.Price.Scan("0")
+		}
 	}
 
 	pools, err := db.DB.GetPoolsByIDs(ctx, body.PoolIDs)
@@ -81,7 +91,7 @@ func CreateOrder(ctx context.Context, body CreateOrderBody) (*db.Order, error) {
 	return &order, nil
 }
 
-func FillPartialOrder(ctx context.Context, parent db.Order, price, amount string) (*db.Order, error) {
+func fillPartialOrder(ctx context.Context, parent db.Order, price, amount string) (*db.Order, error) {
 	params := db.InsertOrderParams{
 		PoolIds:                  parent.PoolIds,
 		Wallet:                   parent.Wallet,
