@@ -1,16 +1,16 @@
 services:
-  timescaledb:
-    image: timescale/timescaledb:latest-pg17
+  dexon_db:
+    image: postgres:latest
     restart: unless-stopped
-    container_name: dexon-timescaledb
+    container_name: dexon_db
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres 
+      POSTGRES_PASSWORD: 4mIcGa6kyxuM1tAF6PnEprSuIQ52qGQyI6OtOnhnGZIcNb7G25
       POSTGRES_DB: dexon
     ports:
       - "5432:5432"
     volumes:
-      - dexon_timescaledb_data:/var/lib/postgresql/data
+      - dexon_db:/var/lib/postgresql/data
     networks:
       - dexon-network
     healthcheck:
@@ -45,7 +45,7 @@ services:
     volumes:
       - ./.env:/app/.env
     depends_on:
-      timescaledb:
+      dexon_db:
         condition: service_healthy
       openobserve:
         condition: service_started
@@ -60,7 +60,7 @@ services:
     init: true
 
 volumes:
-  dexon_timescaledb_data:
+  dexon_db:
   dexon_openobserve_data:
 
 networks:

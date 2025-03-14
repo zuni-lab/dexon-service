@@ -38,10 +38,6 @@ CREATE TABLE IF NOT EXISTS prices (
 );
 
 
--- Create a hypertable for prices
-SELECT create_hypertable('prices', by_range('timestamp_utc'));
-
-
 CREATE TYPE ORDER_STATUS AS ENUM ('PENDING', 'PARTIAL_FILLED' ,'FILLED', 'REJECTED', 'CANCELLED');
 CREATE TYPE ORDER_SIDE AS ENUM ('BUY', 'SELL');
 CREATE TYPE ORDER_TYPE AS ENUM ('MARKET', 'LIMIT', 'STOP', 'TWAP');
